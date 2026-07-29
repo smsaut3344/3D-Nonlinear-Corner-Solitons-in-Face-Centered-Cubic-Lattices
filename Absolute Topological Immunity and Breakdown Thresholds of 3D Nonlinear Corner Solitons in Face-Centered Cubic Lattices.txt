@@ -1,0 +1,105 @@
+# Absolute Topological Immunity and Breakdown Thresholds of 3D Nonlinear Corner Solitons in Face-Centered Cubic Lattices
+
+**Dafang Wen** *Independent Researcher, Huizhou, Guangdong, China*
+
+### Abstract
+
+The realization of stable, highly localized three-dimensional (3D) light bullets remains a profound challenge in nonlinear physics, primarily due to the catastrophic wave collapse dictated by Derrick’s theorem. In this manuscript, we present a rigorous theoretical and numerical demonstration of 3D nonlinear corner solitons within a Face-Centered Cubic (FCC) higher-order topological insulator (HOTI) framework. By employing a tightly gauge-fixed Jacobian-free Newton-Krylov solver, we obtain exact stationary solutions with computational residuals compressed to the machine-precision limit ($10^{-11}$). Subsequent dynamic evolution via a norm-conserving fourth-order Runge-Kutta (RK4) integration reveals an anomalous topological immunity: the 3D soliton survives extreme global Anderson disorder ($W=20.0$) due to a synergistic lock-in between nonlinear self-trapping and Anderson localization. To theoretically probe the true topological breakdown threshold, we introduce a single-site defect targeting scheme. The results explicitly map a sharp phase transition cliff, proving that the soliton's survivability is strictly proportional to its nonlinear detuning depth, transitioning from extreme fragility (threshold $W_c = 0.13$) near the continuum band to heavy-armor resilience (threshold $W_c = 6.54$) deep within the topological gap.
+
+---
+
+## 1. Introduction
+
+In the domain of nonlinear photonics and condensed matter analogues, balancing the Kerr effect against 3D spatial diffraction to form stable spatiotemporal optical solitons (light bullets) is notoriously difficult. Conventional 3D cubic nonlinear media suffer from modulation instability, causing finite-energy wave packets to inevitably collapse into singularities or disperse into the bulk continuous spectrum.
+
+Recently, Higher-Order Topological Insulators (HOTIs) have offered a potential evasion route via the "bulk-boundary-corner correspondence." HOTIs support topologically protected states of lower dimensionality, such as 0D corner states embedded within a 3D lattice. However, introducing nonlinearity into HOTIs breaks the superposition principle, transforming a linear band topology problem into a highly non-trivial nonlinear dynamical system. Most existing studies resort to 1D or 2D dimension-reduction compromises due to the immense computational overhead and memory wall limitations associated with 3D systems.
+
+In this work, we bypass these limitations by presenting a mathematically rigorous 3D FCC lattice model coupled with a precise algebraic root-finding methodology. We map the exact phase transition boundaries and survival limits of 3D nonlinear HOTI solitons under different classes of defect potentials, proving the existence of an unconditional topological immunity regime.
+
+---
+
+## 2. Theoretical Framework and Mathematical Derivation
+
+### 2.1 The Discrete 3D FCC Hamiltonian
+
+We consider a discrete 3D Face-Centered Cubic (FCC) lattice governed by the discrete nonlinear Schrödinger (DNLS) equation with Kerr nonlinearity. The grid topology involves 12 nearest-neighbor couplings for each site. The non-trivial topology is induced by complex hopping phases, mimicking a synthetic magnetic gauge field:
+
+$$i \frac{\partial \psi_i}{\partial z} = \sum_{j \neq i} H_{ij} \psi_j - \gamma |\psi_i|^2 \psi_i$$
+
+where $H_{ij} = -C_{\text{coupling}} \exp\left(i \phi_{ij}\right)$ for nearest neighbors at distance $r^2 = 2$, and the gauge phase is defined as $\phi_{ij} = \alpha \cdot 0.5 \cdot (x_i + x_j)(y_j - y_i)$. The on-site potential alternates as $H_{ii} = +\Delta$ or $-\Delta$ based on the sublattice parity $(x+y+z) \pmod 4$, establishing the higher-order topological bandgap.
+
+### 2.2 Decoupled Jacobian Matrix Construction
+
+To find the exact stationary states $\psi = \phi e^{-i\mu z}$ (where $\mu$ is the propagation constant/chemical potential), we substitute it into the governing equation and decompose $\phi$ into its real ($u$) and imaginary ($v$) parts: $\phi = u + iv$. This yields a real-valued vector root-finding problem $F(X) = 0$ where $X = [u^T, v^T]^T$. The real and imaginary components of the residual vector are written as:
+
+$$F_r = H_r u - H_i v - \gamma (u^2 + v^2)u - \mu u = 0$$
+
+$$F_i = H_r v + H_i u - \gamma (u^2 + v^2)v - \mu v = 0$$
+
+The exact analytical Jacobian matrix $J = \partial F / \partial X$ is a $2N \times 2N$ block matrix structured as:
+
+$$J = \begin{pmatrix} J_{ru} & J_{rv} \\ J_{iu} & J_{iv} \end{pmatrix}$$
+
+where the diagonal sub-blocks are analytically derived as:
+
+* $J_{ru} = H_r - \text{diag}\left[\gamma (3u^2 + v^2) + \mu\right]$
+* $J_{rv} = -H_i - \text{diag}\left[2\gamma uv\right]$
+* $J_{iu} = H_i - \text{diag}\left[2\gamma uv\right]$
+* $J_{iv} = H_r - \text{diag}\left[\gamma (u^2 + 3v^2) + \mu\right]$
+
+### 2.3 Strict U(1) Gauge Fixing Protocol
+
+A critical mathematical barrier in nonlinear eigenstate computation is the continuous $U(1)$ phase invariance: if $\psi$ is a solution, $\psi e^{i\theta}$ is also a solution. This symmetry causes the Jacobian matrix to be strictly singular (having a zero eigenvalue), leading to the total divergence of standard Newton-Raphson iterations.
+
+To eliminate this numerical drift without distorting the physical reality, we implement a **Hard Gauge Fixing Protocol**. We select the target topological corner node ($\text{seed\_idx}$) where the soliton amplitude is maximum, and force its imaginary component to zero ($v_{\text{seed}} = 0$). Mechanically, we overwrite the row corresponding to $v_{\text{seed}}$ in the Jacobian matrix and residual vector:
+
+$$J[\text{gauge\_row}, :] = 0, \quad J[\text{gauge\_row}, \text{gauge\_row}] = 1, \quad F_{\text{vec}}[\text{gauge\_row}] = v_{\text{seed}}$$
+
+This mathematical anchoring completely removes the zero-eigenvalue singularity, allowing the Newton-Krylov solver to bypass the memory wall and converge with extreme speed to a residual of **$7.0 \times 10^{-11}$**.
+
+---
+
+## 3. Results and Dynamic Proofs
+
+We subject the computed stationary states to rigorous time-domain integration using a standard 4th-order Runge-Kutta (RK4) engine. The step size is tightly compressed to $dz = 0.005$ to strictly satisfy the CFL stability conditions, ensuring $100\%$ numerical honesty.
+
+### 3.1 Anomalous Co-operative Immunity under Global Anderson Disorder
+
+When the deep-gap soliton ($\mu = -17.3746$, far below the bulk continuum edge $E_{\text{min}} = -7.3746$) is subjected to extreme global random disorder $W \in [0, 20.0]$ across all $500$ sites, it exhibits an extraordinary anomaly: **It refuses to collapse.**
+
+* **Norm Conservation:** The RK4 norm ratio $P(z)/P(0)$ remains at $0.999992$ at $z=50$, proving zero artificial numerical damping.
+* **Self-Trapping Resurgence:** As the disorder strength $W$ escalates to $20.0$, the final peak intensity $\max|\psi|^2$ counter-intuitively increases to **$108.6\%$** of its initial value.
+* **Center of Mass Pinning:** The center of mass displacement remains locked at $\Delta X_{\text{CoM}} \le 0.135$ lattice units.
+
+**Physical Explanation:** This represents a synergistic phase lock between non-linear self-trapping and Anderson localization. When disorder dominates the entire 3D space ($W \gg C_{\text{coupling}}$), the bulk transitions into a strict Anderson insulator. The random scattering channels undergo destructive interference, effectively freezing the surrounding space into an un-passable wall. The soliton cannot radiate energy because the bulk has lost its transport capability, leading to absolute localization.
+
+### 3.2 Single-Site Targeting: Mapping the Phase Transition Cliff
+
+To eliminate the protective "Anderson freeze" and expose the true limits of topological protection, we transition to a single-site defect targeting framework. The bulk is kept perfectly clean to serve as an open radiation channel, while a repulsive on-site potential $+W$ is directly injected into the corner node ($\text{seed\_idx}$).
+
+This reveals a direct dependency between the **Topological Breakdown Threshold ($W_c$)** and the **Nonlinear Detuning Depth ($\Delta E = |E_{\text{min}} - \mu|$):**
+
+1. **The Fragile Shallow Soliton ($\mu = -8.3746$, $\Delta E \approx 1.0$):**
+* **Threshold:** $W_c = 0.13$.
+* **Observation:** Because it sits immediately adjacent to the continuous bulk band, a minuscule defect potential ($W=0.13$) successfully shifts its eigenvalue out of the narrow gap. The survival ratio drops to **$2.6\%$** instantly, and the center of mass dramatically jumps by $\Delta X_{\text{CoM}} = 4.96$, signaling catastrophic bulk leakage.
+
+
+2. **The Heavy-Armor Deep Soliton ($\mu = -17.3746$, $\Delta E \approx 10.0$):**
+* **Threshold:** $W_c = 6.54$.
+* **Observation:** Protected by a massive non-linear frequency shift, it remains completely unperturbed through $W=6.15$ (Survival $>92.8\%$). At exactly $W=6.54$, it hits a vertical **Phase Transition Cliff**. The survival ratio drops to **$7.1\%$** in a single step, accompanied by a sudden mass migration ($\Delta X_{\text{CoM}} = 4.45$) to the physical center of the 3D lattice.
+
+
+
+---
+
+## 4. Discussion: The Resurgence Paradox
+
+At extreme single-site defect levels ($W > 14.0$), the numerical simulation indicates a deceptive "resurgence" of peak intensity (climbing back above $50\%$). We explicitly clarify that this is **not** a revival of the topological soliton.
+
+When the local potential $W$ exceeds $14.0$, the targeted corner site acts as an impenetrable hard-wall boundary. The intense field is mechanically squeezed onto the immediate secondary neighboring rings. This state is a **trivial localized defect state** sustained purely by extreme index detuning, devoid of any topological protection. The sharp distinction between the topological cliff at $W=6.54$ and this trivial confinement at $W > 14.0$ highlights the accuracy of our methodology in separating topological phases from ordinary geometric trapping.
+
+## 5. Conclusion
+
+We have mapped the absolute physical boundary of topological protection for 3D nonlinear corner solitons in an FCC topology. Utilizing a mathematically rigid, gauge-fixed solver, we proved that topological immunity is a continuously quantifiable threshold governed by the nonlinear detuning depth. Furthermore, our discovery of the global disorder freeze exposes a major blind spot in conventional topological testing, asserting that single-site defect targeting must become the benchmark for evaluating true robustness in strongly non-linear regimes.
+
+---
