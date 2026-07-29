@@ -1,11 +1,11 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-- family-names: "Wen"
-  given-names: "Dafang"
-  orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: "Wen"
+    given-names: "Dafang"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
 title: "3D-Nonlinear-Corner-Solitons-in-Face-Centered-Cubic-Lattices"
-version: 1.2.0
-doi: 10.5281/zenodo.20907045
-date-released: 2026-07-29
+version: "1.2.0"
+doi: "10.5281/zenodo.20907045"
+date-released: "2026-07-29"
 url: "https://github.com/smsaut3344/3D-Nonlinear-Corner-Solitons-in-Face-Centered-Cubic-Lattices"
